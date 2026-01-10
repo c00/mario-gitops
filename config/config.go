@@ -41,14 +41,14 @@ type Endpoint struct {
 	GitopsStrategy string `yaml:"gitopsStrategy"`
 
 	// Actions to take in gitops repo
-	Actions []GitopsAction
+	Actions []GitopsAction `yaml:"actions"`
 }
 
 type GitopsAction struct {
 	// The path to the yaml file in the gitops repo
-	FilePath string
+	FilePath string `yaml:"filePath"`
 	// The JsonPath query to the image tag
-	JsonPath string
+	JsonPath string `yaml:"jsonPath"`
 }
 
 func (c Config) Validate() error {

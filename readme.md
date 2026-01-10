@@ -1,4 +1,4 @@
-# Monitoring and Autonomous Release Integration Operator (Mario)
+# My Autonomous Release Integration Operator (Mario)
 
 Yes, the acronym makes no sense. Let it be.
 
@@ -14,6 +14,15 @@ Example flow:
 
 ## Todo
 
-- Test all the things
-- Make mocks for validator and gitopser
+- Test main
+  - Create a script that runs the thing with mocks
+  - And then throws a bunch of curls at it.
 
+```sh
+# In one terminal
+MARIO_CONFIG_PATH="e2etest.yaml" go run ./cmd/server
+
+# In another
+curl -v http://localhost:8888/webhook/e2e-endpoint
+# Should return 200 OK
+```

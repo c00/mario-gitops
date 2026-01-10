@@ -1,0 +1,16 @@
+# Config file for local end to end test
+gitopsOrg: mockOrg
+gitopsRepository: mockRepo
+gitopsBranch: mockBranch
+gitopsToken: mockToken
+endpoints:
+  - name: end to end endpoint
+    id: e2e-endpoint
+    validationStrategy: mock
+    dockerRepository: crispyduck/mario-gitops
+    gitopsStrategy: mock
+    actions:
+      - filePath: some/path/to/kustomization.yaml
+        jsonPath: "$.images[?(@.name=='crispyduck/mario-gitops')].newTag"
+      - filePath: some/path/to/something-else.yaml
+        jsonPath: "$.image.tag"

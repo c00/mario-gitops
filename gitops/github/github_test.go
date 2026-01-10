@@ -5,15 +5,17 @@ package github
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/c00/mario-gitops/config"
+	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGithub_GetFileContents(t *testing.T) {
-	//todo dotenv test stuff.
+	loadSettings()
 
 	cfg := config.Config{
 		GitopsToken:      os.Getenv("MARIO_GITOPS_TOKEN"),
@@ -24,21 +26,16 @@ func TestGithub_GetFileContents(t *testing.T) {
 
 	gh := New(cfg.GitopsToken, cfg.GitopsOrg, cfg.GitopsRepository, cfg.GitopsBranch)
 
-	expected := `foo: bar
-wow:
-  - such
-  - great
-  - file
-`
+	expected := `This is a test file for reading.`
 
-	sha, contents, err := gh.GetFileContents("src/read-test-file.yaml")
+	sha, contents, err := gh.GetFileContents("testdata/read-file.txt")
 	assert.Nil(t, err)
 	assert.Equal(t, expected, contents)
 	assert.NotEqual(t, "", sha)
 }
 
 func TestGithub_WriteFileContents(t *testing.T) {
-	//todo dotenv test stuff.
+	loadSettings()
 
 	cfg := config.Config{
 		GitopsToken:      os.Getenv("MARIO_GITOPS_TOKEN"),
@@ -49,14 +46,42 @@ func TestGithub_WriteFileContents(t *testing.T) {
 
 	gh := New(cfg.GitopsToken, cfg.GitopsOrg, cfg.GitopsRepository, cfg.GitopsBranch)
 
-	path := "src/write-test-file.yaml"
+	path := "testdata/write-file.txt"
 
 	sha, contents, err := gh.GetFileContents(path)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, sha)
 
-	contents = fmt.Sprintf("%v\n%v", contents, time.Now().String())
+	contents = fmt.Sprintf("This file was last written: %v", time.Now().String())
 	commit, err := gh.WriteFileContents(path, sha, "TestGithub_WriteFileContents: test run", []byte(contents))
 	assert.Nil(t, err)
 	assert.NotEmpty(t, commit)
+}
+
+func loadSettings() {
+	folder, err := findProjectRoot()
+	if err != nil {
+		panic(err)
+	}
+
+	godotenv.Load(filepath.Join(folder, "test.env"))
+}
+
+func findProjectRoot() (string, error) {
+	dir, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+
+	for {
+		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
+			return dir, nil
+		}
+
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return "", os.ErrNotExist
+		}
+		dir = parent
+	}
 }

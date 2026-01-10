@@ -14,7 +14,6 @@ import (
 
 var (
 	cfg config.Config
-	mux *http.ServeMux
 )
 
 func main() {
@@ -37,9 +36,11 @@ func run() error {
 		return fmt.Errorf("loading config failed: %w", err)
 	}
 	// Probably loading of secrets could be done better.
-	cfg.GitopsToken = GitopsToken
+	if cfg.GitopsToken == "" {
+		cfg.GitopsToken = GitopsToken
+	}
 
-	mux = http.NewServeMux()
+	mux := http.NewServeMux()
 
 	// Setup endpoints
 	for _, e := range cfg.Endpoints {
@@ -49,11 +50,12 @@ func run() error {
 			return fmt.Errorf("cannot create handler for webhook: %w", err)
 		}
 
-		stub, err := url.JoinPath("webhook", e.ID)
+		stub, err := url.JoinPath("/webhook", e.ID)
 		if err != nil {
 			return fmt.Errorf("cannot create path: %w", err)
 		}
 
+		slog.Info("Adding Webhook", "stub", stub, "name", e.Name)
 		mux.HandleFunc(stub, handler)
 	}
 
@@ -90,7 +92,8 @@ func createWebhookHandler(e config.Endpoint) (http.HandlerFunc, error) {
 	case config.StrategyDockerHub:
 		validator = &webhookvalidator.DockerHub{}
 	case config.StrategyMockValidate:
-		validator = &webhookvalidator.MockValidate{}
+		slog.Warn("Mock Validator used")
+		validator = &webhookvalidator.MockValidate{TagToReturn: "demo-tag"}
 	default:
 		return nil, fmt.Errorf("unsupported webhook validator strategy: %v", e.ValidationStrategy)
 	}
