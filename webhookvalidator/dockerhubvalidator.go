@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/c00/mario-gitops/config"
 )
@@ -14,13 +16,15 @@ var _ WebhookValidator = (*DockerHub)(nil)
 type DockerHub struct {
 }
 
-func (d *DockerHub) Validate(endpoint config.Endpoint, reader []byte) (string, error) {
+func (d *DockerHub) Validate(endpoint config.Endpoint, rawBody []byte) (string, error) {
 	body := DockerHookPayload{}
 
-	err := json.Unmarshal(reader, &body)
+	err := json.Unmarshal(rawBody, &body)
 	if err != nil {
 		return "", fmt.Errorf("cannot unmarshall body: %w", err)
 	}
+
+	slog.Info("Docker Webhook Received", "callback URL", body.CallbackURL)
 
 	// latest tags should be ignored
 	if body.PushData.Tag == "latest" {
@@ -32,8 +36,9 @@ func (d *DockerHub) Validate(endpoint config.Endpoint, reader []byte) (string, e
 		return "", fmt.Errorf("configure repo and body repo do not match: %v != %v", endpoint.DockerRepository, body.Repository.RepoName)
 	}
 
+	time.Sleep(1000 * time.Second)
 	// Check webhook validity
-	response, err := http.Post(body.CallbackURL, "application/x-www-form-urlencoded", &bytes.Buffer{})
+	response, err := http.Post(body.CallbackURL, "application/json", bytes.NewBufferString(`{"status":"success"}`))
 	if err != nil {
 		return "", fmt.Errorf("docker callback failed: %w", err)
 	}
