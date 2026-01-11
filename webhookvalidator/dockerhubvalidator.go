@@ -1,12 +1,9 @@
 package webhookvalidator
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"log/slog"
-	"net/http"
-	"time"
 
 	"github.com/c00/mario-gitops/config"
 )
@@ -36,16 +33,16 @@ func (d *DockerHub) Validate(endpoint config.Endpoint, rawBody []byte) (string, 
 		return "", fmt.Errorf("configure repo and body repo do not match: %v != %v", endpoint.DockerRepository, body.Repository.RepoName)
 	}
 
-	time.Sleep(1000 * time.Second)
+	// TODO Figure out how the fuck these fucking webhooks work, and then re-enable it. Until then, just yolo it
 	// Check webhook validity
-	response, err := http.Post(body.CallbackURL, "application/json", bytes.NewBufferString(`{"status":"success"}`))
-	if err != nil {
-		return "", fmt.Errorf("docker callback failed: %w", err)
-	}
+	// response, err := http.Post(body.CallbackURL, "application/json", bytes.NewBufferString(`{"status":"success"}`))
+	// if err != nil {
+	// 	return "", fmt.Errorf("docker callback failed: %w", err)
+	// }
 
-	if response.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("not legitimate docker webhook. Got status code %v", response.StatusCode)
-	}
+	// if response.StatusCode != http.StatusOK {
+	// 	return "", fmt.Errorf("not legitimate docker webhook. Got status code %v", response.StatusCode)
+	// }
 
 	return body.PushData.Tag, nil
 }

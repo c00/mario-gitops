@@ -35,7 +35,7 @@ docker build -t mario .
 docker run -v ./e2etest.yaml:/app/config.yaml --rm -p 8888:8888 mario
 
 # Create new build
-export VERSION=5
+export VERSION=7
 docker build -t crispyduck/mario-gitops:$VERSION .
 docker push crispyduck/mario-gitops:$VERSION
 ```
