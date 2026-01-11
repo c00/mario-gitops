@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 
 	"github.com/c00/mario-gitops/config"
@@ -15,13 +14,12 @@ var _ WebhookValidator = (*DockerHub)(nil)
 type DockerHub struct {
 }
 
-func (d *DockerHub) Validate(endpoint config.Endpoint, reader io.Reader) (string, error) {
+func (d *DockerHub) Validate(endpoint config.Endpoint, reader []byte) (string, error) {
 	body := DockerHookPayload{}
 
-	decoder := json.NewDecoder(reader)
-	err := decoder.Decode(&body)
+	err := json.Unmarshal(reader, &body)
 	if err != nil {
-		return "", fmt.Errorf("cannot decode body: %w", err)
+		return "", fmt.Errorf("cannot unmarshall body: %w", err)
 	}
 
 	// latest tags should be ignored
@@ -41,7 +39,7 @@ func (d *DockerHub) Validate(endpoint config.Endpoint, reader io.Reader) (string
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("not legitimate docker webhook")
+		return "", fmt.Errorf("not legitimate docker webhook. Got status code %v", response.StatusCode)
 	}
 
 	return body.PushData.Tag, nil

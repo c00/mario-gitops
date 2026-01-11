@@ -1,7 +1,6 @@
 package webhookvalidator
 
 import (
-	"io"
 	"log/slog"
 
 	"github.com/c00/mario-gitops/config"
@@ -13,7 +12,7 @@ type MockValidate struct {
 	TagToReturn string
 }
 
-func (d *MockValidate) Validate(endpoint config.Endpoint, reader io.Reader) (string, error) {
+func (d *MockValidate) Validate(endpoint config.Endpoint, reader []byte) (string, error) {
 	slog.Info("MockValidator.Validate()", "ID", endpoint.ID)
 
 	return d.TagToReturn, nil

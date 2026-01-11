@@ -14,9 +14,9 @@ Example flow:
 
 ## Todo
 
-- Test main
-  - Create a script that runs the thing with mocks
-  - And then throws a bunch of curls at it.
+- Create deployment example for k8s
+
+## Simple e2e test
 
 ```sh
 # In one terminal
@@ -25,4 +25,17 @@ MARIO_CONFIG_PATH="e2etest.yaml" go run ./cmd/server
 # In another
 curl -v http://localhost:8888/webhook/e2e-endpoint
 # Should return 200 OK
+```
+
+## Docker
+
+```sh
+# To Test
+docker build -t mario .
+docker run -v ./e2etest.yaml:/app/config.yaml --rm -p 8888:8888 mario
+
+# Create new build
+export VERSION=2
+docker build -t crispyduck/mario-gitops:$VERSION .
+docker push crispyduck/mario-gitops:$VERSION
 ```

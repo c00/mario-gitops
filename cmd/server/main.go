@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -66,7 +67,7 @@ func run() error {
 	})
 
 	// Start the server
-	slog.Info("Serving", "port", ":8888")
+	slog.Info("Mario Serving", "port", ":8888")
 
 	err = http.ListenAndServe(":8888", mux)
 	if err != http.ErrServerClosed {
@@ -110,10 +111,16 @@ func createWebhookHandler(e config.Endpoint) (http.HandlerFunc, error) {
 	}
 
 	handler := func(w http.ResponseWriter, r *http.Request) {
+		bodyBytes, err := io.ReadAll(r.Body)
+		if err != nil {
+			slog.Error("cannot read http body", "error", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		defer r.Body.Close()
 		go func() {
-			defer r.Body.Close()
 			// Validate
-			newTag, err := validator.Validate(e, r.Body)
+			newTag, err := validator.Validate(e, bodyBytes)
 			if err != nil {
 				slog.Info("invalid webhook request", "error", err)
 				return
