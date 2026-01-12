@@ -12,10 +12,6 @@ Example flow:
 - Mario updates the gitops repo with the latest tag
 - Gitops system (e.g. argocd or flux) updates k8s cluster.
 
-## Todo
-
-- Create deployment example for k8s
-
 ## Simple e2e test
 
 ```sh

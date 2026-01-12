@@ -1,0 +1,18 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: mario-config
+data:
+  config.yaml: |
+    gitopsOrg: some-org
+    gitopsRepository: my-gitops-repo
+    gitopsBranch: main
+    endpoints:
+      - name: Super Awesome App
+        id: 1111-2222-3333-4444
+        validationStrategy: dockerhub
+        dockerRepository: crispyduck/awesome-app
+        gitopsStrategy: github
+        actions:
+          - filePath: examples/argocd/kustomization.yaml
+            jsonPath: $.images[?(@.name=='crispyduck/awesome-app')].newTag
